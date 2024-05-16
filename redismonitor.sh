@@ -59,6 +59,7 @@ echo
 
 _now=$(date +%Y-%m-%d.%H.%M.%S)
 yellow "starts at $_now"
+echo
 
 # Configurazione di default (verrà usata questa se non è presente un file di configurazione)
 DATA=`/bin/date +"%a"`
@@ -81,7 +82,7 @@ if [[ -f $CONFIG_FILE ]]; then
 else
    echo "Could not load settings from $CONFIG_FILE (file does not exist), script use default settings."
 fi
-
+echo
 
 
 # Scrivo la configurazione finale che verrà usata a console
@@ -91,7 +92,7 @@ echo "MAX_MEMORY_THRESHOLD_PERCENT=$MAX_MEMORY_THRESHOLD_PERCENT"
 echo "EMAIL_RECIPIENTS=$EMAIL_RECIPIENTS"
 echo "DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL"
 echo "LOG_RETENTION_DAYS=$LOG_RETENTION_DAYS"
-
+echo
 
 # Controlla se la policy di evizione è attiva
 if grep -q '^maxmemory-policy' "$REDIS_CONF"; then
@@ -102,17 +103,19 @@ else
   send_email "Redis Alert: Eviction Policy" "$MESSAGE"
   send_discord "$MESSAGE"
 fi
+echo
 
 # Controlla se Redis risponde al ping
 if redis-cli ping | grep -q PONG; then
-  red "Redis risponde al ping."
+  echo "Redis risponde al ping."
 else
-  echo "Redis non risponde al ping."
+  red "Redis non risponde al ping."
   MESSAGE="Redis non risponde al ping"
   send_email "Redis Alert: Ping Failed" "$MESSAGE"
   send_discord "$MESSAGE"
   exit 1
 fi
+echo
 
 nome_macchina=$(hostname)
 
@@ -141,6 +144,7 @@ USED_MEMORY_PERCENT_CONF=$((100 * USED_MEMORY_MB / MAX_MEMORY_CONF_MB))
 echo "Memoria usata da Redis: $USED_MEMORY_MB MB"
 echo "Percentuale di memoria usata da Redis rispetto alla memoria totale del sistema: $USED_MEMORY_PERCENT_TOTAL%"
 echo "Percentuale di memoria usata da Redis rispetto alla memoria massima configurata: $USED_MEMORY_PERCENT_CONF%"
+echo
 
 # Controlla se la memoria usata supera la soglia percentuale rispetto alla memoria totale del sistema
 if [ "$USED_MEMORY_PERCENT_TOTAL" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
@@ -151,6 +155,7 @@ if [ "$USED_MEMORY_PERCENT_TOTAL" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
 else
   echo "La memoria usata da Redis ($USED_MEMORY_MB MB, $USED_MEMORY_PERCENT_TOTAL%) non supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT% rispetto alla memoria totale del sistema"
 fi
+echo
 
 # Controlla se la memoria usata supera la soglia percentuale rispetto alla memoria massima configurata in Redis
 if [ "$USED_MEMORY_PERCENT_CONF" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
@@ -161,10 +166,12 @@ if [ "$USED_MEMORY_PERCENT_CONF" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
 else
   echo "La memoria usata da Redis ($USED_MEMORY_MB MB, $USED_MEMORY_PERCENT_CONF%) non supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT% rispetto alla memoria massima configurata"
 fi
+echo
 
 # Pulizia log più vecchi di LOG_RETENTION_DAYS
 echo "Pulizia log più vecchi di $LOG_RETENTION_DAYS giorni"
 cleanup_logs "$LOG_RETENTION_DAYS"
+echo
 
 _now=$(date +%Y-%m-%d.%H.%M.%S)
 yellow "Finish at $_now"
