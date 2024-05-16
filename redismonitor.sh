@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Funzioni per colorare il testo
+yellow() {
+  echo -e "\033[33m$1\033[0m"
+}
+
+red() {
+  echo -e "\033[31m$1\033[0m"
+}
 
 # Funzione per cancellare log più vecchi di X giorni
 cleanup_logs() {
@@ -18,7 +26,7 @@ send_email() {
   {
     echo "$message" | mail -s "$nomemacchina $subject" "$EMAIL_RECIPIENTS"
   } || {
-    echo "Errore durante l'invio dell'email: $subject"
+    red "Errore durante l'invio dell'email: $subject"
   }
 }
 
@@ -32,7 +40,7 @@ send_discord() {
   {
     curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$message\"}" "$DISCORD_WEBHOOK_URL"
   } || {
-    echo "Errore durante l'invio della notifica a Discord: $message"
+    red "Errore durante l'invio della notifica a Discord: $message"
   }
 }
 
@@ -50,7 +58,7 @@ echo
 
 
 _now=$(date +%Y-%m-%d.%H.%M.%S)
-echo "starts at $_now"
+yellow "starts at $_now"
 
 # Configurazione di default (verrà usata questa se non è presente un file di configurazione)
 DATA=`/bin/date +"%a"`
@@ -89,7 +97,7 @@ echo "LOG_RETENTION_DAYS=$LOG_RETENTION_DAYS"
 if grep -q '^maxmemory-policy' "$REDIS_CONF"; then
   echo "Eviction policy attiva."
 else
-  echo "Eviction policy non configurata in $REDIS_CONF"
+  red "Eviction policy non configurata in $REDIS_CONF"
   MESSAGE="Eviction policy non configurata in $REDIS_CONF"
   send_email "Redis Alert: Eviction Policy" "$MESSAGE"
   send_discord "$MESSAGE"
@@ -97,7 +105,7 @@ fi
 
 # Controlla se Redis risponde al ping
 if redis-cli ping | grep -q PONG; then
-  echo "Redis risponde al ping."
+  red "Redis risponde al ping."
 else
   echo "Redis non risponde al ping."
   MESSAGE="Redis non risponde al ping"
@@ -119,7 +127,7 @@ TOTAL_MEMORY=$(free -m | awk '/^Mem:/{print $2}')
 # USED_MEMORY=$(redis-cli info memory | grep used_memory: | awk -F':' '{print $2}')
 USED_MEMORY=$(redis-cli info memory | grep used_memory: | awk -F':' '{print $2}' | tr -d '[:space:]')
 divisore=$((1024 * 1024))
-echo $USED_MEMORY
+#echo $USED_MEMORY
 
 USED_MEMORY_MB=$(expr $USED_MEMORY / $divisore)
 
@@ -136,7 +144,7 @@ echo "Percentuale di memoria usata da Redis rispetto alla memoria massima config
 
 # Controlla se la memoria usata supera la soglia percentuale rispetto alla memoria totale del sistema
 if [ "$USED_MEMORY_PERCENT_TOTAL" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
-  echo "Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_TOTAL%) rispetto alla memoria totale del sistema, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
+  red "Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_TOTAL%) rispetto alla memoria totale del sistema, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
   MESSAGE="Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_TOTAL%) rispetto alla memoria totale del sistema, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
   send_email "Redis Alert: Memory Usage (Total System)" "$MESSAGE"
   send_discord "$MESSAGE"
@@ -146,7 +154,7 @@ fi
 
 # Controlla se la memoria usata supera la soglia percentuale rispetto alla memoria massima configurata in Redis
 if [ "$USED_MEMORY_PERCENT_CONF" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
-  echo "Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
+  red "Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
   MESSAGE="**$nome_macchina**: Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
   send_email "Redis Alert $nome_macchina: Memory Usage (Configured Max)" "$MESSAGE"
   send_discord "$MESSAGE"
@@ -159,4 +167,4 @@ echo "Pulizia log più vecchi di $LOG_RETENTION_DAYS giorni"
 cleanup_logs "$LOG_RETENTION_DAYS"
 
 _now=$(date +%Y-%m-%d.%H.%M.%S)
-echo "Finish at $_now"
+yellow "Finish at $_now"
