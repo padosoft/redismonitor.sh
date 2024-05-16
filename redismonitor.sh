@@ -50,7 +50,8 @@ echo "
  |_) |_ | \  |  (_    |\/| / \ |\ |  |   | / \ |_)
  | \ |_ |_/ _|_ __)   |  | \_/ | \| _|_  | \_/ | \
 "
-echo "di Lorenzo Padovani"
+echo
+echo " di Lorenzo Padovani"
 echo
 
 
