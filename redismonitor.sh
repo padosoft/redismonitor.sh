@@ -16,7 +16,11 @@ send_email() {
     return
   fi
 
-  echo "$message" | mail -s "$subject" "$EMAIL_RECIPIENTS"
+  {
+    echo "$message" | mail -s "$subject" "$EMAIL_RECIPIENTS"
+  } || {
+    echo "Errore durante l'invio dell'email: $subject"
+  }
 }
 
 # Funzione per inviare notifiche a Discord
@@ -27,9 +31,12 @@ send_discord() {
     return
   fi
 
-  curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$message\"}" "$DISCORD_WEBHOOK_URL"
+  {
+    curl -H "Content-Type: application/json" -X POST -d "{\"content\": \"$message\"}" "$DISCORD_WEBHOOK_URL"
+  } || {
+    echo "Errore durante l'invio della notifica a Discord: $message"
+  }
 }
-
 
 # Stampa intestazione con ASCII art e nome
 echo "
