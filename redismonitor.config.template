@@ -11,3 +11,10 @@ MAX_MEMORY_THRESHOLD_PERCENT=85 # Soglia di utilizzo della memoria in percentual
 EMAIL_RECIPIENTS="email1@example.com,email2@example.com"
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
 LOG_RETENTION_DAYS=7 # Giorni di retention dei log
+# semaphore
+ALERT_BLOCK_MINUTES=30 # Minuti di blocco per gli avvisi dopo aver raggiunto il limite
+MAX_ALERTS=5 # Numero massimo di avvisi prima di attivare il blocco
+SEMAPHORE_EVICTION="/tmp/redismonitor_semaphore_eviction"
+SEMAPHORE_PING="/tmp/redismonitor_semaphore_ping"
+SEMAPHORE_MEMORY_SYS="/tmp/redismonitor_semaphore_memory_sys"
+SEMAPHORE_MEMORY="/tmp/redismonitor_semaphore_memory"
