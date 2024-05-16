@@ -11,13 +11,12 @@ cleanup_logs() {
 send_email() {
   local subject="$1"
   local message="$2"
-
   if [ -z "$EMAIL_RECIPIENTS" ]; then
     return
   fi
 
   {
-    echo "$message" | mail -s "$subject" "$EMAIL_RECIPIENTS"
+    echo "$message" | mail -s "$nomemacchina $subject" "$EMAIL_RECIPIENTS"
   } || {
     echo "Errore durante l'invio dell'email: $subject"
   }
@@ -26,7 +25,6 @@ send_email() {
 # Funzione per inviare notifiche a Discord
 send_discord() {
   local message="$1"
-
   if [ -z "$DISCORD_WEBHOOK_URL" ]; then
     return
   fi
@@ -108,6 +106,8 @@ else
   exit 1
 fi
 
+nome_macchina=$(hostname)
+
 # Ottieni la maxmemory configurata in Redis
 MAX_MEMORY_CONF=$(redis-cli config get maxmemory | grep -v maxmemory)
 MAX_MEMORY_CONF_MB=$((MAX_MEMORY_CONF / 1024 / 1024))
@@ -116,8 +116,12 @@ MAX_MEMORY_CONF_MB=$((MAX_MEMORY_CONF / 1024 / 1024))
 TOTAL_MEMORY=$(free -m | awk '/^Mem:/{print $2}')
 
 # Ottieni la memoria totale usata da Redis in MB
-USED_MEMORY=$(redis-cli info memory | grep used_memory: | awk -F':' '{print $2}')
-USED_MEMORY_MB=$((USED_MEMORY / 1024 / 1024))
+# USED_MEMORY=$(redis-cli info memory | grep used_memory: | awk -F':' '{print $2}')
+USED_MEMORY=$(redis-cli info memory | grep used_memory: | awk -F':' '{print $2}' | tr -d '[:space:]')
+divisore=$((1024 * 1024))
+echo $USED_MEMORY
+
+USED_MEMORY_MB=$(expr $USED_MEMORY / $divisore)
 
 # Calcola la percentuale di memoria usata da Redis rispetto alla memoria totale del sistema
 USED_MEMORY_PERCENT_TOTAL=$((100 * USED_MEMORY_MB / TOTAL_MEMORY))
@@ -143,8 +147,8 @@ fi
 # Controlla se la memoria usata supera la soglia percentuale rispetto alla memoria massima configurata in Redis
 if [ "$USED_MEMORY_PERCENT_CONF" -gt "$MAX_MEMORY_THRESHOLD_PERCENT" ]; then
   echo "Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
-  MESSAGE="Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
-  send_email "Redis Alert: Memory Usage (Configured Max)" "$MESSAGE"
+  MESSAGE="**$nome_macchina**: Redis sta usando $USED_MEMORY_MB MB di memoria ($USED_MEMORY_PERCENT_CONF%) rispetto alla memoria massima configurata, che supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT%"
+  send_email "Redis Alert $nome_macchina: Memory Usage (Configured Max)" "$MESSAGE"
   send_discord "$MESSAGE"
 else
   echo "La memoria usata da Redis ($USED_MEMORY_MB MB, $USED_MEMORY_PERCENT_CONF%) non supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT% rispetto alla memoria massima configurata"
