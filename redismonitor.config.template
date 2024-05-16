@@ -1,0 +1,13 @@
+#!/bin/bash
+# local config file template used by redismonitor.sh, 
+# USAGE:
+# rename this file redismonitor.config and set your vars.
+# redismonitor.config is excluded from git
+
+
+DATA=`/bin/date +"%a"`
+REDIS_CONF="/etc/redis/redis.conf"
+MAX_MEMORY_THRESHOLD_PERCENT=85 # Soglia di utilizzo della memoria in percentuale
+EMAIL_RECIPIENTS="email1@example.com,email2@example.com"
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
+LOG_RETENTION_DAYS=7 # Giorni di retention dei log
