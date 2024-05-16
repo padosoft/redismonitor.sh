@@ -45,13 +45,14 @@ send_discord() {
 }
 
 # Stampa intestazione con ASCII art e nome
+echo
 echo "
   _   _  _  ___  __         _       ___ ___ _   _
  |_) |_ | \  |  (_    |\/| / \ |\ |  |   | / \ |_)
- | \ |_ |_/ _|_ __)   |  | \_/ | \| _|_  | \_/ | \
-"
+ | \ |_ |_/ _|_ __)   |  | \_/ | \| _|_  | \_/ | \"
 echo
 echo " di Lorenzo Padovani"
+echo
 echo
 
 
