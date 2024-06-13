@@ -122,7 +122,7 @@ SEMAPHORE_MEMORY="/tmp/redismonitor_semaphore_memory"
 SEMAPHORE_COMPRESSION="/tmp/redismonitor_semaphore_compression"
 #redis check compression command
 REDIS_ALERT_BLOCK_MINUTES=300 # Minuti di blocco per gli avvisi dopo aver raggiunto il limite
-REDIS_CHECK_COMPRESSION_COMMAND="php -r 'phpinfo(INFO_MODULES);' | grep -A 10 -i redis | grep 'Available compression => '"
+REDIS_CHECK_COMPRESSION_COMMAND="php -r 'phpinfo(INFO_MODULES);' | grep -A 10 -i redis | grep 'Available compression'"
 
 #
 # Load config file if exists
@@ -259,7 +259,7 @@ else
       yellow "è stato raggiunto il limite di avvisi quindi non verrà inviato un ulteriore avviso"
     fi
 fi
-
+echo
 
 # Pulizia log più vecchi di LOG_RETENTION_DAYS
 echo "Pulizia log più vecchi di $LOG_RETENTION_DAYS giorni"
