@@ -21,4 +21,4 @@ SEMAPHORE_MEMORY="/tmp/redismonitor_semaphore_memory"
 #redis check compression command
 REDIS_ALERT_BLOCK_MINUTES=300 # Minuti di blocco per gli avvisi dopo aver raggiunto il limite
 # for plesk panel
-# REDIS_CHECK_COMPRESSION_COMMAND="/opt/plesk/php/8.2/bin/php -r 'phpinfo(INFO_MODULES);' | grep -A 10 -i redis | grep 'Available compression => '"
+# REDIS_CHECK_COMPRESSION_COMMAND="/opt/plesk/php/8.2/bin/php -r 'phpinfo(INFO_MODULES);' | grep -A 10 -i redis | grep 'Available compression'"
