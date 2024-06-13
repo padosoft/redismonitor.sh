@@ -119,7 +119,10 @@ SEMAPHORE_EVICTION="/tmp/redismonitor_semaphore_eviction"
 SEMAPHORE_PING="/tmp/redismonitor_semaphore_ping"
 SEMAPHORE_MEMORY_SYS="/tmp/redismonitor_semaphore_memory_sys"
 SEMAPHORE_MEMORY="/tmp/redismonitor_semaphore_memory"
-
+SEMAPHORE_COMPRESSION="/tmp/redismonitor_semaphore_compression"
+#redis check compression command
+REDIS_ALERT_BLOCK_MINUTES=300 # Minuti di blocco per gli avvisi dopo aver raggiunto il limite
+REDIS_CHECK_COMPRESSION_COMMAND="php -r 'phpinfo(INFO_MODULES);' | grep -A 10 -i redis | grep 'Available compression => '"
 
 #
 # Load config file if exists
@@ -145,6 +148,7 @@ echo "DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL"
 echo "LOG_RETENTION_DAYS=$LOG_RETENTION_DAYS"
 echo "ALERT_BLOCK_MINUTES=$ALERT_BLOCK_MINUTES"
 echo "MAX_ALERTS=$MAX_ALERTS"
+echo "REDIS_CHECK_COMPRESSION_COMMAND=$REDIS_CHECK_COMPRESSION_COMMAND"
 echo
 
 # Ottieni il nome della macchina vm
@@ -239,6 +243,23 @@ else
   echo "La memoria usata da Redis ($USED_MEMORY_MB MB, $USED_MEMORY_PERCENT_CONF%) non supera la soglia di $MAX_MEMORY_THRESHOLD_PERCENT% rispetto alla memoria massima configurata"
 fi
 echo
+
+# Verifica se phpredis è installato con la compressione abilitata
+# Controlla le informazioni dell'estensione redis
+redis_info=$(REDIS_CHECK_COMPRESSION_COMMAND)
+if echo "$redis_info"; then
+    echo "La compressione è abilitata in phpredis."
+else
+    red "La compressione non è abilitata in phpredis."
+    MESSAGE="**$nome_macchina**: La compressione non è abilitata in phpredis."
+    if check_semaphore "$SEMAPHORE_MEMORY" "$MAX_ALERTS" "$REDIS_ALERT_BLOCK_MINUTES"; then
+      send_email "Redis Alert $nome_macchina: Compressione Redis NON abilitata" "$MESSAGE"
+      send_discord "$MESSAGE"
+    else
+      yellow "è stato raggiunto il limite di avvisi quindi non verrà inviato un ulteriore avviso"
+    fi
+fi
+
 
 # Pulizia log più vecchi di LOG_RETENTION_DAYS
 echo "Pulizia log più vecchi di $LOG_RETENTION_DAYS giorni"
