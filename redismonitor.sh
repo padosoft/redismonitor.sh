@@ -246,10 +246,8 @@ echo
 
 # Verifica se phpredis è installato con la compressione abilitata
 # Controlla le informazioni dell'estensione redis
-redis_info=$(REDIS_CHECK_COMPRESSION_COMMAND)
-if echo "$redis_info"; then
-    echo "La compressione è abilitata in phpredis."
-else
+bash -c "$REDIS_CHECK_COMPRESSION_COMMAND"
+if [ $? -eq 1 ]; then
     red "La compressione non è abilitata in phpredis."
     MESSAGE="**$nome_macchina**: La compressione non è abilitata in phpredis."
     if check_semaphore "$SEMAPHORE_MEMORY" "$MAX_ALERTS" "$REDIS_ALERT_BLOCK_MINUTES"; then
@@ -258,6 +256,8 @@ else
     else
       yellow "è stato raggiunto il limite di avvisi quindi non verrà inviato un ulteriore avviso"
     fi
+else
+    echo "La compressione è abilitata in phpredis."
 fi
 echo
 
